@@ -40,7 +40,7 @@ jobs:
         username: ${{secrets.DEV_SERVER_USERNAME}}
         script: |
           pm2 delete all
-          cd /var/app/schulzeitung
+          cd
           git pull
           npm install
           (cd server; npm run build)
