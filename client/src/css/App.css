@@ -1,0 +1,54 @@
+@font-face {
+    font-family: 'pakenham-free';
+    src: local('pakenham-free'), url(../fonts/pakenham-free/pakenham\ rg.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'pricedown';
+    src: local('pricedown'), url(../fonts/pricedown/pricedown\ bl.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'gnuolane-free';
+    src: local('gnuolane-free'), url(../fonts/gnuolane-free/gnuolane\ rg.otf) format('opentype');
+}
+
+body {
+    background-color: #00F6DE;
+
+    font-family: gnuolane-free;
+}
+
+button {
+    background-color: #F6EA00;
+
+    border: 1px solid gray;
+}
+
+input, textarea {
+    background-color: #17F105;
+
+    border: 1px solid gray;
+    color: black;
+
+    border-radius: 0;
+}
+
+
+
+
+.container {
+    width: fit-content;
+    height: fit-content;
+
+    border: 2px solid black;
+
+    padding: 20px;
+    margin: 15px;
+
+    float: left;
+}
+
+.container * {
+    margin: 5px;
+}
