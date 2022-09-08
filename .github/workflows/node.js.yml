@@ -24,8 +24,8 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 12
+    - run: npm install
     - run: npm ci
-    - run: npm test
     - name: SSH Remote Commands
       # You may pin to the exact commit or the version.
       # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
