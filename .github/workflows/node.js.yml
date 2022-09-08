@@ -27,15 +27,15 @@ jobs:
     - name: SSH Remote Commands
       # You may pin to the exact commit or the version.
       # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
-      uses: appleboy/ssh-action@v0.1.5
-      env:
+      uses: D3rHase/ssh-command-action@v0.2.1
+      with:
         # Private Key
-        key: ${{secrets.DEV_SERVER_KEY}}
+        PRIVATE_SSH_KEY: ${{secrets.DEV_SERVER_KEY}}
         # Remote host
-        host: ${{secrets.DEV_SERVER_HOST}}
+        HOST: ${{secrets.DEV_SERVER_HOST}}
         # Remote user
-        username: ${{secrets.DEV_SERVER_USERNAME}}
-        script: |
+        USER: ${{secrets.DEV_SERVER_USERNAME}}
+        COMMAND: |
           pm2 delete all
           cd
           git pull
