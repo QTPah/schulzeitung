@@ -28,9 +28,9 @@ jobs:
       # You may pin to the exact commit or the version.
       # uses: appleboy/ssh-action@f9010ff7f1bbd7db1a0b4bab661437550cea20c0
       uses: appleboy/ssh-action@v0.1.5
-      with:
+      env:
         # Private Key
-        passphrase: ${{secrets.DEV_SERVER_KEY}}
+        password: ${{secrets.DEV_SERVER_KEY}}
         # Remote host
         host: ${{secrets.DEV_SERVER_HOST}}
         # Remote user
