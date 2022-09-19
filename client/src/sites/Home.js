@@ -21,8 +21,7 @@ const Home = () => {
 
     return (
         <SiteWrapper>
-            <img src={bigbabafoto} style={{ resize:'block', width: '100%', position: 'relative', marginTop: '10px' }} />
-            <p style={{margin: '30px 20px' }}>
+            <p style={{ margin: '30px 20px' }}>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus finibus malesuada erat, et tincidunt mauris condimentum et. Suspendisse sagittis augue gravida, porta nisl non, egestas dolor. Etiam mollis tincidunt dui id tempor. Pellentesque commodo orci libero, vel vulputate nunc tincidunt eget. Nunc eu pulvinar lorem. Duis at varius dui. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec at magna malesuada magna efficitur ornare sed non dolor. Fusce sapien mi, hendrerit a nisi a, faucibus euismod lectus. Duis lobortis mi vitae volutpat luctus. Curabitur vel vestibulum tellus. Praesent luctus nulla ut feugiat tincidunt. Vivamus nec lectus ipsum. Donec ornare mauris sagittis lorem fringilla auctor ultricies at libero.
 
                 Aenean ullamcorper efficitur urna, a congue tortor gravida fringilla. Nunc vel leo vulputate, semper orci quis, blandit velit. Donec sollicitudin a nisl a mollis. Fusce suscipit ex sollicitudin tortor egestas vulputate. Morbi vitae aliquet magna, id maximus velit. Quisque feugiat vel urna vitae sodales. Aenean libero eros, ultrices a consequat dignissim, suscipit vel odio. Aliquam a ultricies libero, non tristique dui. In eget lectus gravida, euismod magna non, ornare velit. Vivamus congue eleifend pellentesque. Suspendisse feugiat vitae lorem id commodo. Curabitur ut suscipit mauris, id mollis mauris. Aenean dolor magna, efficitur sed interdum quis, lacinia vitae ligula.
