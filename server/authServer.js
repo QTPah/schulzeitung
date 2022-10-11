@@ -102,7 +102,7 @@ app.post('/auth/register', (req, res) => {
     
     bcrypt.hash(password, 10, (err, hash) => {
         db.query('INSERT INTO users (email, password, status) VALUES (?, ?, ?);', 
-        [email, hash, JSON.stringify({ roles: [ { name: 'STUDENT', permissions: ['VIEW:STUDENT'] } ], score:0, badges: [] })], (err, results) => {
+        [email, hash, JSON.stringify({ roles: [ { name: 'STUDENT', permissions: ['VIEW:POSTS', 'VIEW:RUBRIKEN'] } ], score:0, badges: [] })], (err, results) => {
             if(err) return res.sendStatus(500);
 
             res.sendStatus(200);

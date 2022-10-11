@@ -17,9 +17,11 @@ import Account from './sites/Account';
 import Manage from './sites/Manage';
 import News from './sites/News';
 import Rubriken from './sites/Rubriken';
+import PostViewer from './sites/PostViewer';
+
+import Umfragen from './sites/rubriken/Umfragen';
 
 import './css/App.css';
-import PostViewer from './sites/PostViewer';
 
 function App() {
 
@@ -32,24 +34,31 @@ function App() {
           <Routes>
             <Route exact path="/" element={<Home />} />
               {auth.user && <Route path="/account" element={<Account />} />}
-              {auth.user && <Route path="/rubriken" element={<Rubriken />} />}
+              {auth.user && <Route exact path="/rubriken" element={<Rubriken />} />}
               {!auth.user && <Route path="/login" element={<Login />} />}
               {!auth.user && <Route path="/register" element={<Register />} />}
               <Route path="/manage" element={
-                <PrivateRoute path='/manage' element={<Manage />} perms={['MANAGE:']}>
+                <PrivateRoute perms={['MANAGE:']}>
                   <Manage />
                 </PrivateRoute>
               } />
              <Route exact path="/news" element={
-                <PrivateRoute path='/news' element={<News />} perms={['VIEW:']}>
+                <PrivateRoute perms={['VIEW:']}>
                   <News />
                 </PrivateRoute>
               } />
               <Route exact path="/postviewer" element={
-                <PrivateRoute path='/postviewer' element={<PostViewer />} perms={['VIEW:']}>
+                <PrivateRoute perms={['VIEW:']}>
                   <PostViewer />
                 </PrivateRoute>
               } />
+
+              <Route exact path="/rubriken/umfragen" element={
+                <PrivateRoute perms={['VIEW:']}>
+                  <Umfragen />
+                </PrivateRoute>
+              } />
+              
           </Routes>
         </Router>
     </>
