@@ -1,5 +1,18 @@
 require('dotenv').config();
 
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    auth: {
+        user: 'zeitung.schule.cool@gmail.com',
+        pass: 'oouwhmomjzyryhlp'
+    }
+});
+
 const express = require('express');
 const app = express();
 
@@ -66,7 +79,7 @@ app.post('/auth/login', (req, res) => {
 
         let result = results[0];
         
-        if(!result || result === undefined) res.json({ err: 'User doesn\'t exist!', auth: false });
+        if(!result || result.password === undefined) res.json({ err: 'User doesn\'t exist!', auth: false });
 
         bcrypt.compare(password, result.password).then((match) => {
 
@@ -93,21 +106,56 @@ app.post('/auth/login', (req, res) => {
 
 });
 
+let emailCodes = [];
+
 app.post('/auth/register', (req, res) => {
     
     const email = req.body.email,
         password = req.body.password;
 
     if(!email || !password) return res.json({err: 'Email or Password missig.'});
-    
-    bcrypt.hash(password, 10, (err, hash) => {
-        db.query('INSERT INTO users (email, password, status) VALUES (?, ?, ?);', 
-        [email, hash, JSON.stringify({ roles: [ { name: 'STUDENT', permissions: ['VIEW:POSTS', 'VIEW:RUBRIKEN'] } ], score:0, badges: [] })], (err, results) => {
-            if(err) return res.sendStatus(500);
+    if(!email.endsWith("@edu.sbl.ch")) return res.json({err: 'Email not accepted!'});
 
-            res.sendStatus(200);
+    if(!req.body.code) {
+
+        let code = Math.floor(Math.random() * (999999 - 111111 + 1) + 111111)
+
+        transporter.sendMail({
+            from: 'zeitung.zeitung.cool@gmail.com',
+            to: email,
+            subject: 'Bestätigungs Code',
+            html: `<h3>Ihr code lautet: </h3><h1>${code}</h1>`
+        }, (error, info) => {
+            if (error) return res.json({err: 'Failed to send Mail'});
+            emailCodes.push({
+                email,
+                code,
+                iot: Date.now()
+            });
+            return res.json({res: 'Verification code sent'});
+        });
+
+        return res.json({res: 'Sending verification code'});
+    }
+
+    if(!emailCodes.find(e => e.email == email && e.code == req.body.code)) return res.json({err: 'Wrong verification code'});
+
+    emailCodes.splice(emailCodes.findIndex(e => e.email == email), 1);
+    
+    db.query('SELECT * FROM users WHERE email = ?', email, (err, results) => {
+        if(!results[0]) return res.json({err: 'User already exists'});
+
+        bcrypt.hash(password, 10, (err, hash) => {
+            db.query('INSERT INTO users (email, password, status) VALUES (?, ?, ?);', 
+            [email, hash, JSON.stringify({ roles: [ { name: 'STUDENT', permissions: ['VIEW:POSTS', 'VIEW:RUBRIKEN'] } ], score:0, badges: [] })], (err, results) => {
+                if(err) return res.sendStatus(500);
+    
+                res.statusCode(200).json({res:'Registered'});
+            });
         });
     });
+
+
 });
 
 function authJWT(req, res, next) {

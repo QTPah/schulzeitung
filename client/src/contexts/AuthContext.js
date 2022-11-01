@@ -26,14 +26,14 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function signup(email, password) {
+  async function signup(email, password, code) {
     setLoading(true);
 
-    const res = await Axios.post(`/auth${config.path.signup}`, { email, password });
+    const res = await Axios.post(`/auth${config.path.signup}`, { email, password, code });
 
     setLoading(false);
 
-    return res.status === 200 ? true : false;
+    return res;
   }
 
   async function login(email, password) {

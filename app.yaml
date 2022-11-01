@@ -1,0 +1,18 @@
+runtime: nodejs16 # or another supported version
+
+instance_class: F2
+
+env_variables:
+  CLOUDSDK_CORE_PROJECT: 
+  ACCESS_TOKEN_SECRET: 1b69054e2ced8e9b0bb3624c7ab1e57578c6559d5cf535e53586dfa7e2b61b351a8c5fac7c6fab47f1ad068237d2a59d74f84c2201810660c7cc0101cf65d877
+  REFRESH_TOKEN_SECRET: c0843a7a2b586eb70e1d21726b2aa2b155ab0b345043a21a4732f62f52efe58ef0bc475def6bcacc1e263d9fd785a4440eb4e6f4775b962b1a1a3389c0dd3cca
+  DB_USER: root
+  DB_PASSWORD: 8a6b045f794b67e3c243c2e904a73ddbb10a8d47cf7c8744baea4389d9c0f1b2
+  WEB_PORT: 3000
+  API_PORT: 3001
+  AUTH_PORT: 3002
+
+- url: /.*
+  secure: always
+  redirect_http_response_code: 301
+  script: auto

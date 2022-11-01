@@ -32,6 +32,7 @@ const Home = () => {
                 <br />
                 - Memmolo Nerea
             </p>
+
             <h1>{ auth.user ? "logged in" : "signed out" }</h1><br />
             <button onClick={checkAPI}>Check API</button>{apiStatus}
         </SiteWrapper>
