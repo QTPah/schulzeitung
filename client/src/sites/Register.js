@@ -10,26 +10,22 @@ function Register() {
   const navigate = useNavigate();
 
   const [message, setMessage] = useState("");
-  const [sentCode, setSentCode] = useState(false);
 
   const emailRef = useRef(),
         passwordRef = useRef(),
         codeRef = useRef();
 
   async function register() {
+    if(!window.location.href.endsWith('code')) window.location.href += '?code';
     const res = await auth.signup(emailRef.current.value, passwordRef.current.value, codeRef.current ? codeRef.current.value : null);
 
-    if(res.err) return setMessage(res.err);
+    if(res.data.err) setMessage(res.data.err);
+    if(res.data.res) {
+      setMessage(res.data.res);
 
-    setSentCode(true);
 
-    if(res.res) {
-      if(res.res === 'Sending verification code') {
-        setSentCode(true);
-      }
+      if(res.data.res == "Registered") return navigate('/login');
     }
-
-    if(res.res === 'Registered') return navigate('/login');
   }
 
   return (
@@ -40,10 +36,13 @@ function Register() {
             <input ref={emailRef} type="email" name="email" /><br />
             <label>Password:</label><br />
             <input ref={passwordRef} type="password" name="password" /><br />
-            <div class="message">{message}</div>{message !== "" && <br />}
             <button onClick={register} type="submit">Register</button>
         </div>
-        {sentCode ? <div class="container">
+        {message ?
+        <div className='container' style={{backgroundColor:'orange'}}>
+          {message}
+        </div> : <></>}
+        {window.location.href.endsWith('code') ? <div class="container">
         <h1>Bestätigungs code</h1>
         <p>Dir wurde ein bestätigungs code per mail zugeschickt. Schreib ihn <input ref={codeRef} type="text" name="code" placeholder='hier rein' />.<br />
         Wenn du fertig bist, drückst du <button onClick={register}>hier</button></p>
