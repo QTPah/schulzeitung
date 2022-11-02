@@ -10,7 +10,6 @@ function Register() {
   const navigate = useNavigate();
 
   const [message, setMessage] = useState("");
-  const [sentCode, setSentCode] = useState(false);
 
   const emailRef = useRef(),
         passwordRef = useRef(),
@@ -19,17 +18,15 @@ function Register() {
   async function register() {
     const res = await auth.signup(emailRef.current.value, passwordRef.current.value, codeRef.current ? codeRef.current.value : null);
     
-    if(res.err) return setMessage(res.err);
+    if(res.data.err) return setMessage(res.data.err);
 
     if(!window.location.href.endWith('code')) window.location.href += "?code";
     
-    if(res.res) {
-      if(res.res === 'Sending verification code') {
-        setSentCode(true);
-      }
+    if(res.data.res) {
+          if(res.data.res === 'Registered') return navigate('/login');
     }
 
-    if(res.res === 'Registered') return navigate('/login');
+
   }
 
   return (
