@@ -8,8 +8,8 @@ const transporter = nodemailer.createTransport({
     secure: false,
     requireTLS: true,
     auth: {
-        user: 'zeitung.schule.cool@gmail.com',
-        pass: 'oouwhmomjzyryhlp'
+        user: process.env.MAIL,
+        pass: process.env.MAIL_PASSWORD
     }
 });
 
