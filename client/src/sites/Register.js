@@ -40,7 +40,7 @@ function Register() {
             <div class="message">{message}</div>{message !== "" && <br />}
             <button onClick={register} type="submit">Register</button>
         </div>
-        {window.location.href.endWith('code') ? <div class="container">
+        {window.location.href.endsWith('code') ? <div class="container">
         <h1>Bestätigungs code</h1>
         <p>Dir wurde ein bestätigungs code per mail zugeschickt. Schreib ihn <input ref={codeRef} type="text" name="code" placeholder='hier rein' />.<br />
         Wenn du fertig bist, drückst du <button onClick={register}>hier</button></p>
