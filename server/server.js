@@ -1,3 +1,33 @@
+require('dotenv').config();
+
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    auth: {
+        user: process.env.MAIL,
+        pass: process.env.MAIL_PASSWORD
+    }
+});
+
+const mysql = require('mysql');
+
+const db = mysql.createConnection({
+    host: 'localhost',
+    database: 'News',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD
+});
+
+db.connect((err) => {
+    if(err) return console.log(err);
+
+    console.log('Database connected!');
+});
+
 const express = require('express');
 const path = require('path');
 
@@ -6,12 +36,20 @@ const app = express();
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, '..', 'client/build')));
 
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt')
+
+app.use(express.json());
+app.use(require('cors')());
+
+
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{
     res.sendFile(path.join(__dirname+'/../client/build/index.html'));
 });
 
 //#region API Server
+<<<<<<< HEAD
 
 function authJWT(req, res, next) {
 
@@ -80,6 +118,71 @@ app.post('/api/tes', (req, res) => {
   console.log(req.body);
 })
 
+=======
+function authJWT(req, res, next) {
+
+    // Grab the token from the request header and remove the "Bearer" from the header (header is "Bearer [TOKEN]")
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+
+    // check if token exists
+    if(token === null) return res.sendStatus(401);
+
+    // Try to decrypt the token with env.ACCESS_TOKEN_SECRET
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+
+        // check if token is valid
+        if(err) return res.sendStatus(403);
+
+        // return the decryted (from token with env.ACCESS_TOKEN_SECRET) user data and move on
+        req.user = user;
+
+        next();
+    });
+}
+
+function getPermissions(user) {
+    let perms = [];
+
+    user.status.roles.forEach(r => {
+        perms.push(...r.permissions);
+    });
+
+    return [...new Set(perms)];
+}
+
+app.get('/api/ping', authJWT, (req, res) => {
+    console.log(req.user);
+    res.status(200).send({message: 'Success!'});
+});
+
+app.post('/api/post', authJWT, (req, res) => {
+    //if(!getPermissions(req.user).includes('MANAGE:POSTS')) return res.sendStatus(403);
+    
+    if(!req.body.title || !req.body.body || !req.body.tags) return res.status(400).json({message: 'Missing fields!'});
+
+    db.query('INSERT INTO posts (title, body, tags, stats) VALUES (?, ?, ?, ?);', [req.body.title, req.body.body, req.body.tags, JSON.stringify({likes:0,views:0,comments:[]})], (err, results) => {
+
+        if(err) return res.status(500).json({message: 'Failed to post.'});
+        
+        res.status(200).json({message: 'Success!'});
+
+    });
+});
+
+app.get('/api/posts', authJWT, (req, res) => {
+    //if(!getPermissions(req.user).includes('VIEW_POSTS')) return res.sendStatus(403);
+
+    db.query('SELECT * FROM posts;', (err, results) => {
+        
+        if(err) return res.status(500).json({message: 'Failed to get posts.'});
+
+        res.status(200).json(results);
+    });
+});
+
+>>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
 //#endregion
 
 //#region Auth Server
@@ -123,7 +226,11 @@ app.post('/auth/login', (req, res) => {
 
         let result = results[0];
         
+<<<<<<< HEAD
         if(!result || result.password === undefined) return res.json({ err: 'User doesn\'t exist!', auth: false });
+=======
+        if(!result || result.password === undefined) res.json({ err: 'User doesn\'t exist!', auth: false });
+>>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
 
         bcrypt.compare(password, result.password).then((match) => {
 
@@ -158,7 +265,11 @@ app.post('/auth/register', (req, res) => {
         password = req.body.password;
 
     if(!email || !password) return res.json({err: 'Email or Password missig.'});
+<<<<<<< HEAD
     if(!email.endsWith("@edu.sbl.ch") && !email.endsWith("@sbl.ch")) return res.json({err: 'Email not accepted!'});
+=======
+    if(!email.endsWith("@edu.sbl.ch")) return res.json({err: 'Email not accepted!'});
+>>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
 
     if(!req.body.code) {
 
@@ -187,6 +298,7 @@ app.post('/auth/register', (req, res) => {
     emailCodes.splice(emailCodes.findIndex(e => e.email == email), 1);
     
     db.query('SELECT * FROM users WHERE email = ?', email, (err, results) => {
+<<<<<<< HEAD
         if(results[0]) return res.json({err: 'User already exists'});
 
         bcrypt.hash(password, 10, (err, hash) => {
@@ -197,6 +309,16 @@ app.post('/auth/register', (req, res) => {
                 if(err) return res.sendStatus(500);
     
                 res.status(200).json({res:'Registered'});
+=======
+        if(!results[0]) return res.json({err: 'User already exists'});
+
+        bcrypt.hash(password, 10, (err, hash) => {
+            db.query('INSERT INTO users (email, password, status) VALUES (?, ?, ?);', 
+            [email, hash, JSON.stringify({ roles: [ { name: 'STUDENT', permissions: ['VIEW:POSTS', 'VIEW:RUBRIKEN'] } ], score:0, badges: [] })], (err, results) => {
+                if(err) return res.sendStatus(500);
+    
+                res.statusCode(200).json({res:'Registered'});
+>>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
             });
         });
     });
@@ -204,6 +326,32 @@ app.post('/auth/register', (req, res) => {
 
 });
 
+<<<<<<< HEAD
+=======
+function authJWT(req, res, next) {
+
+    // Grab the token from the request header and remove the "Bearer" from the header (header is "Bearer [TOKEN]")
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+
+    // check if token exists
+    if(token === null) return res.sendStatus(401);
+
+    // Try to decrypt the token with env.ACCESS_TOKEN_SECRET
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+
+        // check if token is valid
+        if(err) return res.sendStatus(403);
+
+        // return the decryted (from token with env.ACCESS_TOKEN_SECRET) user data and move on
+        req.user = user;
+
+        next();
+    });
+}
+
+>>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
 app.get('/auth/check', authJWT, (req, res) => {
     db.query('SELECT * FROM users WHERE email = ?;', [req.user.email], (err, results) => {
         if(err) return res.sendStatus(500);
@@ -227,7 +375,11 @@ function generateAccessToken(user) {
 
 //#endregion
 
+<<<<<<< HEAD
 const port = process.env.PORT || 80;
+=======
+const port = process.env.PORT || 5000;
+>>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
 app.listen(port);
 
 console.log('App is listening on port ' + port);
