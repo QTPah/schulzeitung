@@ -203,7 +203,8 @@ app.post('/auth/register', (req, res) => {
             subject: 'Bestätigungs Code',
             html: `<h3>Ihr code lautet: </h3><h1>${code}</h1>`
         }, (error, info) => {
-            if (error) return res.json({err: 'Failed to send Mail'});
+            if (error)
+                return res.json({err: 'Failed to send Mail'});
             emailCodes.push({
                 email,
                 code,
