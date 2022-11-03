@@ -21,7 +21,6 @@ function Register() {
     
     if(res.data.err) return setMessage(res.data.err);
 
-<<<<<<< HEAD
     if(res.data.err) setMessage(res.data.err);
     if(res.data.res) {
       setMessage(res.data.res);
@@ -29,15 +28,6 @@ function Register() {
 
       if(res.data.res == "Registered") return navigate('/login');
     }
-=======
-    if(!window.location.href.endWith('code')) window.location.href += "?code";
-    
-    if(res.data.res) {
-          if(res.data.res === 'Registered') return navigate('/login');
-    }
-
-
->>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
   }
 
   return (
@@ -50,13 +40,10 @@ function Register() {
             <input ref={passwordRef} type="password" name="password" /><br />
             <button onClick={register} type="submit">Register</button>
         </div>
-<<<<<<< HEAD
         {message ?
         <div className='container' style={{backgroundColor:'orange'}}>
           {message}
         </div> : <></>}
-=======
->>>>>>> 15524d76e8a73b2cc62c1484f4f064e2d1ff5a63
         {window.location.href.endsWith('code') ? <div class="container">
         <h1>Bestätigungs code</h1>
         <p>Dir wurde ein bestätigungs code per mail zugeschickt. Schreib ihn <input ref={codeRef} type="text" name="code" placeholder='hier rein' />.<br />
