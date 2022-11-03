@@ -203,8 +203,7 @@ app.post('/auth/register', (req, res) => {
             subject: 'Bestätigungs Code',
             html: `<h3>Ihr code lautet: </h3><h1>${code}</h1>`
         }, (error, info) => {
-            if (error)
-                return res.json({err: 'Failed to send Mail'});
+            if (error) return res.json({err: 'Failed to send Mail'});
             emailCodes.push({
                 email,
                 code,
@@ -212,8 +211,6 @@ app.post('/auth/register', (req, res) => {
             });
             return res.json({res: 'Verification code sent'});
         });
-
-        return res.json({res: 'Sending verification code'});
     }
 
     if(!emailCodes.find(e => e.email == email && e.code == req.body.code)) return res.json({err: 'Wrong verification code'});
