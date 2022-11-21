@@ -8,7 +8,6 @@ const transporter = nodemailer.createTransport({
     secure: false,
     requireTLS: true,
     auth: {
-        type: "login",
         user: process.env.MAIL_ADDRESS,
         pass: process.env.MAIL_PASSWORD
     }
@@ -63,9 +62,6 @@ function authJWT(req, res, next) {
 
   // Try to decrypt the token with env.ACCESS_TOKEN_SECRET
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-
-    console.log(err);
-    console.log(req.user ? true : false);
       // check if token is valid
       if(err) return res.sendStatus(403);
 
@@ -87,7 +83,6 @@ function getPermissions(user) {
 }
 
 app.get('/api/ping', authJWT, (req, res) => {
-  console.log(req.user);
   res.status(200).send({message: 'Success!'});
 });
 
@@ -244,7 +239,6 @@ app.post('/auth/check', authJWT, (req, res) => {
     db.query('SELECT * FROM users WHERE email = ?;', [req.user.email], (err, results) => {
         if(err) return res.sendStatus(500);
 
-        console.log(results[0]);
         let result = JSON.parse(JSON.stringify(results[0]));
 
         result.status = JSON.parse(result.status);
