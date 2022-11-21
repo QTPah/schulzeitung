@@ -63,7 +63,8 @@ export function AuthProvider({ children }) {
     let res;
 
     try {
-      res = await Axios.get(`/auth${config.path.check}`, { headers: { "authorization": localStorage.getItem("token") } });
+      res = await Axios.post(`/auth${config.path.check}`, null, { headers: { "authorization": localStorage.getItem("token")}});
+      console.log(res);
     } catch(err) {
       setUser(null);
       setLoading(false);
