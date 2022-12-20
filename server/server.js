@@ -34,7 +34,9 @@ const path = require('path');
 const app = express();
 
 // Serve the static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'client/build')));
+if(process.argv[2] != "dev") {
+    app.use(express.static(path.join(__dirname, '..', 'client/build')));
+}
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt')
@@ -44,9 +46,12 @@ app.use(require('cors')());
 
 
 // Handles any requests that don't match the ones above
-app.get('*', (req,res) =>{
-    res.sendFile(path.join(__dirname+'/../client/build/index.html'));
-});
+if(process.argv[2] != "dev") {
+    app.get('*', (req,res) =>{
+        res.sendFile(path.join(__dirname+'/../client/build/index.html'));
+    });
+}
+
 
 //#region API Server
 
@@ -72,26 +77,16 @@ function authJWT(req, res, next) {
   });
 }
 
-function getPermissions(user) {
-  let perms = [];
-
-  user.status.roles.forEach(r => {
-      perms.push(...r.permissions);
-  });
-
-  return [...new Set(perms)];
-}
-
 app.get('/api/ping', authJWT, (req, res) => {
   res.status(200).send({message: 'Success!'});
 });
 
 app.post('/api/post', authJWT, (req, res) => {
-  //if(!getPermissions(req.user).includes('MANAGE:POSTS')) return res.sendStatus(403);
+  if(!req.user.status.permissions.includes('MANAGE:POSTS')) return res.sendStatus(403);
   
   if(!req.body.title || !req.body.body || !req.body.tags) return res.status(400).json({message: 'Missing fields!'});
 
-  db.query('INSERT INTO posts (title, body, tags, stats) VALUES (?, ?, ?, ?);', [req.body.title, req.body.body, req.body.tags, JSON.stringify({likes:0,views:0,comments:[]})], (err, results) => {
+  db.query('INSERT INTO posts (title, lead, body, tags, stats) VALUES (?, ?, ?, ?, ?);', [req.body.title, req.body.lead, req.body.body, req.body.tags, JSON.stringify({likes:0,views:0,comments:[]})], (err, results) => {
 
       if(err) return res.status(500).json({message: 'Failed to post.'});
       
@@ -101,7 +96,7 @@ app.post('/api/post', authJWT, (req, res) => {
 });
 
 app.get('/api/posts', authJWT, (req, res) => {
-  //if(!getPermissions(req.user).includes('VIEW_POSTS')) return res.sendStatus(403);
+  if(!req.user.status.permissions.includes('VIEW_POSTS')) return res.sendStatus(403);
 
   db.query('SELECT * FROM posts;', (err, results) => {
       
@@ -188,8 +183,8 @@ app.post('/auth/register', (req, res) => {
     const email = req.body.email,
         password = req.body.password;
 
-    if(!email || !password) return res.json({err: 'Email or Password missig.'});
-    if(!email.endsWith("@edu.sbl.ch") && !email.endsWith("@sbl.ch")) return res.json({err: 'Email not accepted!'});
+    if(!req.body.code ? !email || !password : false) return res.json({err: 'Email or Password missig.'});
+    if(!req.body.code ? !email.endsWith("@edu.sbl.ch") && !email.endsWith("@sbl.ch") : false) return res.json({err: 'Email not accepted!'});
 
     if(!req.body.code) {
 
@@ -204,6 +199,7 @@ app.post('/auth/register', (req, res) => {
             if (error) return res.json({err: 'Failed to send Mail: '+error});
             emailCodes.push({
                 email,
+                password,
                 code,
                 iot: Date.now()
             });
@@ -213,20 +209,20 @@ app.post('/auth/register', (req, res) => {
         return;
     }
 
-    if(!emailCodes.find(e => e.email == email && e.code == req.body.code)) return res.json({err: 'Wrong verification code'});
+    if(!emailCodes.find(e => e.code == req.body.code)) return res.json({err: 'Wrong verification code'});
+    let registry = emailCodes.find(e => e.code == req.body.code);
 
-    emailCodes.splice(emailCodes.findIndex(e => e.email == email), 1);
-    
-    db.query('SELECT * FROM users WHERE email = ?', email, (err, results) => {
+    db.query('SELECT * FROM users WHERE email = ?', registry.email, (err, results) => {
         if(results[0]) return res.json({err: 'User already exists'});
 
-        bcrypt.hash(password, 10, (err, hash) => {
+        bcrypt.hash(registry.password, 10, (err, hash) => {
             db.query('INSERT INTO users (email, password, status) VALUES (?, ?, ?);', 
-            [email, hash, JSON.stringify({ roles: [ { name: 
-                    email.endsWith('@edu.sbl.ch') ? 'STUDENT' : 'TEACHER'
-                , permissions: ['VIEW:POSTS', 'VIEW:RUBRIKEN'] } ], score:0, badges: [] })], (err, results) => {
+            [registry.email, hash, JSON.stringify({ permissions: 
+                registry.email.endsWith('@edu.sbl.ch') ? ['VIEW:POSTS', 'VIEW:RUBRIKEN', 'STUDENT' ] : ['VIEW:POSTS', 'VIEW:RUBRIKEN', 'TEACHER' ]
+                , score:0, badges: [] })], (err, results) => {
                 if(err) return res.sendStatus(500);
     
+                emailCodes.splice(emailCodes.findIndex(e => e.email == registry.email), 1);
                 res.status(200).json({res:'Registered'});
             });
         });
@@ -249,6 +245,55 @@ app.post('/auth/check', authJWT, (req, res) => {
         });
     });
 });
+
+app.get('/auth/getusers', authJWT, (req, res) => {
+    if(!req.user.status.permissions.includes('MANAGE:USERS')) return res.sendStatus(403);
+
+    db.query('SELECT * FROM users;', (err, results) => {
+        if(err) return res.sendStatus(500);
+
+        results = JSON.parse(JSON.stringify(results));
+
+        for(let i = 0; i < results.length; i++) results[i].status = JSON.parse(results[i].status);
+
+        res.json({
+            auth: true,
+            users: results
+        });
+    });
+});
+
+app.delete('/auth/revokepermission', authJWT, (req, res) => {
+    if(!req.user.status.permissions.includes('MANAGE:USERS')) res.sendStatus(403);
+
+    db.query('SELECT * FROM users WHERE email = ?;', [req.body.email], (err, results) => {
+        let user = results[0];
+
+        if(!user) return res.status(400).json({err:'user not found.'});
+        user = JSON.parse(JSON.stringify(user));
+        user.status = JSON.parse(user.status);
+        console.log(user);
+
+        user.status.permissions.splice(user.status.permissions.indexOf(req.body.permission), 1);
+
+        console.log(user);
+
+        db.query('UPDATE users SET status = ? WHERE email = ?;', [JSON.stringify(user.status), user.email], (err, results) => {
+            if(err) return res.sendStatus(500);
+            
+            res.sendStatus(200);
+        });
+    });
+});
+
+
+app.post('/auth/givepermission', authJWT, (req, res) => {
+    if(!req.user.status.permissions.includes('MANAGE:USERS') || !req.user.status.permissions.includes(req.body.permission)) res.sendStatus(403);
+
+
+});
+
+
 
 function generateAccessToken(user) {
     // Encrypt the data (user, password) with the env.ACCESS_TOKEN_SECRET and return the token

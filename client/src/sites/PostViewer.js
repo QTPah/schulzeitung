@@ -29,9 +29,9 @@ function PostViewer() {
 
     return (
         <SiteWrapper>
-            <div className="postWrapper">
-                <h1 style={{fontFamily:"pricedown", fontSize: '50px'}}>{post.title}</h1>
-                <p>
+            <div className="postWrapper" style={{textAlign:'center', position:'relative'}}>
+                <h1 style={{fontFamily:"pricedown", fontSize: '70px'}}>{post.title}</h1>
+                <p style={{fontSize:'18px'}}>
                     {post.body}
                 </p>
             </div>

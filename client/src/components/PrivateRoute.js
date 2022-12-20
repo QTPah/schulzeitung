@@ -1,6 +1,7 @@
 import React from 'react'
 import { Navigate, Route } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
+import SiteWrapper from './SiteWrapper';
 
 function PrivateRoute({ perms, children }) {
 
@@ -8,7 +9,7 @@ function PrivateRoute({ perms, children }) {
 
   return (
     <>
-      {auth.hasPermissions(perms) ? children : <h1>404</h1>}
+      {auth.hasPermissions(perms) ? children : <SiteWrapper><h1>403 ^ geh nach hause</h1></SiteWrapper>}
     </>
   );
 }

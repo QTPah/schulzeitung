@@ -19,6 +19,7 @@ function News() {
 
   useEffect(() => {
     api.getPosts().then(res => {
+        console.log(res);
         setPosts(res);
     }).catch(err => {
         auth.sync();
@@ -34,8 +35,8 @@ function News() {
                 return (
                     <div className="container" style={{margin:"10px", marginBottom:"20px"}} onClick={() => navigate(`/postviewer?post=${encodeURI(post.title)}`)}>
                         <h1>{post.title}</h1>
-                        <p>{post.body}</p>
-                        <p>{post.tags}</p>
+                        <p>{post.lead}</p>
+                        {post.tags.split(',').map(t => <div style={{border: '1px solid black', width: 'fit-content', height: 'fit-content', borderRadius: '2px'}}><p style={{margin: '1px', fontSize: '12px'}}>{t}</p></div>)}
                     </div>
                 )
             })}

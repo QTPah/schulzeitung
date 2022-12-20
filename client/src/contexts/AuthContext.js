@@ -22,7 +22,9 @@ export function AuthProvider({ children }) {
       signup: "/register",
       check: "/check",
       logout: "/logout",
-      refresh: "/token"
+      refresh: "/token",
+      getUsers: "/getusers",
+      revokePermission: "/revokepermission"
     }
   }
 
@@ -49,8 +51,6 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", 'Bearer ' + res.data.accessToken);
     localStorage.setItem("refresh_token", res.data.refreshToken);
 
-    console.log(res.data.user);
-
     setUser(res.data.user);
 
     setLoading(false);
@@ -64,14 +64,11 @@ export function AuthProvider({ children }) {
 
     try {
       res = await Axios.post(`/auth${config.path.check}`, null, { headers: { "authorization": localStorage.getItem("token")}});
-      console.log(res);
     } catch(err) {
       setUser(null);
       setLoading(false);
       return false;
     }
-
-    console.log(res.data.user);
 
     setUser(res.data.user || null); 
 
@@ -106,20 +103,19 @@ export function AuthProvider({ children }) {
   function getPermissions() {
     if(!user) return [];
 
-    let perms = [];
+    return user.permissions;
+  }
 
-    user.status.roles.forEach(r => {
-      perms.push(...r.permissions);
-    });
-
-    return perms;
+  function getUserPermissions(u) {
+    if(!u) return [];
+    return user.status.permissions;
   }
 
   function hasPermissions(perms) {
     return user ? perms.every(v => {
-      return v[v.length - 1] === ':' ? 
-        getPermissions().includes(getPermissions().find(p => p.startsWith(v.slice(0, -1)))) : 
-        getPermissions().includes(v)
+      return v[v.length - 1] === ':' ?
+        user.status.permissions.includes(user.status.permissions.find(p => p.startsWith(v.slice(0, -1)))) :
+        user.status.permissions.includes(v)
     }) : false;
   }
 
@@ -127,12 +123,26 @@ export function AuthProvider({ children }) {
 
   }
 
+  async function getUsers() {
+    const res = await Axios.get(`/auth${config.path.getUsers}`, { headers: { "authorization": localStorage.getItem('token') } });
+  
+    if(res.status !== 200) {
+      await sync();
+    }
+
+    return res.data.users;
+  }
+
+  async function revokePermission(email, permission) {
+    const res = Axios.delete(`/auth${config.path.revokePermission}`, { headers: { "authorization": localStorage.getItem('token') }, data: { email, permission } })
+  }
+
   useEffect(() => {
     sync();
   }, [])
   
   const value = {
-    login, signup, logout, check, refreshToken, sync, user, getPermissions, hasPermissions
+    login, signup, logout, check, refreshToken, sync, user, getPermissions, getUserPermissions, hasPermissions, getUsers, revokePermission
   }
 
   return (

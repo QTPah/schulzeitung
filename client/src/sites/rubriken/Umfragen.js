@@ -2,7 +2,6 @@ import React from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 
 import SiteWrapper from '../../components/SiteWrapper'
-import Role from '../../components/Role'
 
 const Umfragen = () => {
 

@@ -22,6 +22,7 @@ import PostViewer from './sites/PostViewer';
 import Umfragen from './sites/rubriken/Umfragen';
 
 import './css/App.css';
+import SiteWrapper from './components/SiteWrapper';
 
 function App() {
 
@@ -43,7 +44,7 @@ function App() {
                 </PrivateRoute>
               } />
              <Route exact path="/news" element={
-                <PrivateRoute perms={['VIEW:']}>
+                <PrivateRoute perms={['VIEW:POSTS']}>
                   <News />
                 </PrivateRoute>
               } />
@@ -59,6 +60,8 @@ function App() {
                 </PrivateRoute>
               } />
               
+
+              <Route path="*" element={<SiteWrapper><h1>404</h1></SiteWrapper>} />
           </Routes>
         </Router>
     </>
