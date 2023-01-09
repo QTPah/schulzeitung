@@ -35,7 +35,6 @@ function App() {
           <Routes>
             <Route exact path="/" element={<Home />} />
               {auth.user && <Route path="/account" element={<Account />} />}
-              {auth.user && <Route exact path="/rubriken" element={<Rubriken />} />}
               {!auth.user && <Route path="/login" element={<Login />} />}
               {!auth.user && <Route path="/register" element={<Register />} />}
               <Route path="/manage" element={
@@ -46,6 +45,11 @@ function App() {
              <Route exact path="/news" element={
                 <PrivateRoute perms={['VIEW:POSTS']}>
                   <News />
+                </PrivateRoute>
+              } />
+              <Route exact path="/rubriken" element={
+                <PrivateRoute perms={['VIEW:RUBRIKEN']}>
+                  <Rubriken />
                 </PrivateRoute>
               } />
               <Route exact path="/postviewer" element={

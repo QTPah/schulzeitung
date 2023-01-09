@@ -11,7 +11,7 @@ const Account = () => {
         <SiteWrapper>
             <div className='container'>
                 <h3>Email:</h3> <div className='out'>{auth.user.email}</div><br />
-                <h3>Permissions:</h3> <div className='out'>{auth.user.status.permissions.map(p => p)}</div>
+                <h3>Permissions:</h3> <div className='out'>{auth.user.status.permissions.map(p => <>{p}<br /></>)}</div>
             </div>
         </SiteWrapper>
     )

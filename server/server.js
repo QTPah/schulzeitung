@@ -1,6 +1,8 @@
 require('dotenv').config();
 
+
 const nodemailer = require('nodemailer');
+
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -13,20 +15,20 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 const db = mysql.createConnection({
-    host: 'localhost',
+    host: '127.0.0.1',
     database: 'News',
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD
 });
 
-db.connect((err) => {
-    if(err) return console.log(err);
+// db.connect((err) => {
+//     if(err) return console.log(err);
 
-    console.log('Database connected!');
-});
+//     console.log('Database connected!');
+// });
 
 const express = require('express');
 const path = require('path');
@@ -84,10 +86,11 @@ app.get('/api/ping', authJWT, (req, res) => {
 app.post('/api/post', authJWT, (req, res) => {
   if(!req.user.status.permissions.includes('MANAGE:POSTS')) return res.sendStatus(403);
   
-  if(!req.body.title || !req.body.body || !req.body.tags) return res.status(400).json({message: 'Missing fields!'});
+  if(!req.body.title || !req.body.body || !req.body.tags || !req.body.lead) return res.status(400).json({message: 'Missing fields!'});
 
   db.query('INSERT INTO posts (title, lead, body, tags, stats) VALUES (?, ?, ?, ?, ?);', [req.body.title, req.body.lead, req.body.body, req.body.tags, JSON.stringify({likes:0,views:0,comments:[]})], (err, results) => {
 
+    console.log(err);
       if(err) return res.status(500).json({message: 'Failed to post.'});
       
       res.status(200).json({message: 'Success!'});
@@ -160,9 +163,7 @@ app.post('/auth/login', (req, res) => {
             const user = { username };
 
             result = JSON.parse(JSON.stringify(result));
-
-            result.status = JSON.parse(result.status);
-
+            
             const accessToken = generateAccessToken(result);
             const refreshToken = jwt.sign(result, process.env.REFRESH_TOKEN_SECRET);
 
@@ -237,8 +238,6 @@ app.post('/auth/check', authJWT, (req, res) => {
 
         let result = JSON.parse(JSON.stringify(results[0]));
 
-        result.status = JSON.parse(result.status);
-
         res.json({
             auth: true,
             user: result
@@ -246,15 +245,13 @@ app.post('/auth/check', authJWT, (req, res) => {
     });
 });
 
-app.get('/auth/getusers', authJWT, (req, res) => {
+app.post('/auth/getusers', authJWT, (req, res) => {
     if(!req.user.status.permissions.includes('MANAGE:USERS')) return res.sendStatus(403);
 
     db.query('SELECT * FROM users;', (err, results) => {
         if(err) return res.sendStatus(500);
 
-        results = JSON.parse(JSON.stringify(results));
-
-        for(let i = 0; i < results.length; i++) results[i].status = JSON.parse(results[i].status);
+        console.log(results);
 
         res.json({
             auth: true,
@@ -271,12 +268,8 @@ app.delete('/auth/revokepermission', authJWT, (req, res) => {
 
         if(!user) return res.status(400).json({err:'user not found.'});
         user = JSON.parse(JSON.stringify(user));
-        user.status = JSON.parse(user.status);
-        console.log(user);
 
         user.status.permissions.splice(user.status.permissions.indexOf(req.body.permission), 1);
-
-        console.log(user);
 
         db.query('UPDATE users SET status = ? WHERE email = ?;', [JSON.stringify(user.status), user.email], (err, results) => {
             if(err) return res.sendStatus(500);
@@ -287,10 +280,27 @@ app.delete('/auth/revokepermission', authJWT, (req, res) => {
 });
 
 
-app.post('/auth/givepermission', authJWT, (req, res) => {
-    if(!req.user.status.permissions.includes('MANAGE:USERS') || !req.user.status.permissions.includes(req.body.permission)) res.sendStatus(403);
+app.post('/auth/grantpermission', authJWT, (req, res) => {
+    console.log(req.user);
+    if(!req.user.status.permissions.includes('MANAGE:USERS')) res.sendStatus(403);
 
+    db.query('SELECT * FROM users WHERE email = ?;', [req.body.email], (err, results) => {
 
+        let user = results[0];
+
+        if(!user) return res.status(400).json({err:'user not found.'});
+        
+        user = JSON.parse(JSON.stringify(user));
+        user.status = JSON.parse(user.status);
+
+        user.status.permissions.push(req.body.permission);
+
+        db.query('UPDATE users SET status = ? WHERE email = ?;', [JSON.stringify(user.status), user.email], (err, results) => {
+            if(err) return res.sendStatus(500);
+            res.sendStatus(200);
+        });
+
+    });
 });
 
 

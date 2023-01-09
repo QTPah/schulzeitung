@@ -5,6 +5,7 @@ function User({ user }) {
 
     const userRef = useRef();
     const infoRef = useRef();
+    const permissionRef = useRef();
 
     const auth = useAuth();
 
@@ -26,16 +27,19 @@ function User({ user }) {
         <>
             <div ref={userRef} className='user' style={{border: '2px solid black', borderRadius: '4px', fontSize: '20px'}}>
                 <p style={{margin: '5px'}}>{user.email}</p>
-                <div ref={infoRef} className='userinfo'>
+            </div>
+            <div ref={infoRef} className='userinfo' style={{border: '2px solid black', borderRadius: '1px', fontSize: '16px'}}>
                     
-                    <h5>Permissions:</h5>
-                        {user.status.permissions.map(p => (<p style={{fontSize: '15px', border: '1px solid black', width: 'fit-content'}} onClick={() => {
-                                auth.revokePermission(user.email, p).then(() => {
-                                    window.location.reload();
-                                });
-                        }} key={p} >{p}<br /></p>))}
-                    
-                </div>
+                <h5>Permissions:</h5>
+                    {user.status.permissions.map(p => (<p style={{fontSize: '15px', border: '1px solid black', width: 'fit-content'}} onClick={() => {
+                            auth.revokePermission(user.email, p).then(() => {
+                                window.location.reload();
+                            });
+                    }} key={p} >{p}<br /></p>))}
+                    <input ref={permissionRef} type="text" placeholder="Permission"></input><button onClick={() => {
+                        auth.grantPermission(user.email, permissionRef.current.value);
+                        window.location.reload();
+                    }}>Grant</button>
             </div>
         </>
     );

@@ -19,6 +19,7 @@ const Manage = () => {
 
     const postData = {
         title: useRef(),
+        lead: useRef(),
         body: useRef(),
         tags: useRef(),
         channel: useRef()
@@ -32,6 +33,7 @@ const Manage = () => {
 
         api.post({
             title: postData.title.current.value,
+            lead: postData.lead.current.value,
             body: postData.body.current.value,
             tags: postData.tags.current.value
         }).then(async res => {

@@ -38,7 +38,7 @@ function NavBar() {
                     <div className="menu">
                         <li><a href="/">Home</a></li>
                         <PrivateLink href="/news" perms={["VIEW:POSTS"]}>News</PrivateLink>
-                        {auth.user && <li><a href="/rubriken">Rubriken</a></li>}
+                        <PrivateLink href="/rubriken" perms={["VIEW:RUBRIKEN"]}>Rubriken</PrivateLink>
                         <PrivateLink href="/manage" perms={["MANAGE:"]}>Manage</PrivateLink>
                     </div>
                     <div className="pfp">

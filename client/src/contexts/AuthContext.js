@@ -24,7 +24,8 @@ export function AuthProvider({ children }) {
       logout: "/logout",
       refresh: "/token",
       getUsers: "/getusers",
-      revokePermission: "/revokepermission"
+      revokePermission: "/revokepermission",
+      grantPermission: "/grantpermission"
     }
   }
 
@@ -32,7 +33,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     const res = await Axios.post(`/auth${config.path.signup}`, { email, password, code });
-
+    console.log(res);
     setLoading(false);
 
     return res;
@@ -100,17 +101,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  function getPermissions() {
-    if(!user) return [];
-
-    return user.permissions;
-  }
-
-  function getUserPermissions(u) {
-    if(!u) return [];
-    return user.status.permissions;
-  }
-
   function hasPermissions(perms) {
     return user ? perms.every(v => {
       return v[v.length - 1] === ':' ?
@@ -124,7 +114,7 @@ export function AuthProvider({ children }) {
   }
 
   async function getUsers() {
-    const res = await Axios.get(`/auth${config.path.getUsers}`, { headers: { "authorization": localStorage.getItem('token') } });
+    const res = await Axios.post(`/auth${config.path.getUsers}`, {}, { headers: { "authorization": localStorage.getItem('token') } });
   
     if(res.status !== 200) {
       await sync();
@@ -137,12 +127,16 @@ export function AuthProvider({ children }) {
     const res = Axios.delete(`/auth${config.path.revokePermission}`, { headers: { "authorization": localStorage.getItem('token') }, data: { email, permission } })
   }
 
+  async function grantPermission(email, permission) {
+    const res = Axios.post(`/auth${config.path.grantPermission}`, { email, permission }, { headers: { "authorization": localStorage.getItem('token') } })
+  }
+
   useEffect(() => {
     sync();
   }, [])
   
   const value = {
-    login, signup, logout, check, refreshToken, sync, user, getPermissions, getUserPermissions, hasPermissions, getUsers, revokePermission
+    login, signup, logout, check, refreshToken, sync, user, hasPermissions, getUsers, revokePermission, grantPermission
   }
 
   return (
