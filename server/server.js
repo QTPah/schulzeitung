@@ -308,7 +308,6 @@ app.post('/auth/grantpermission', authJWT, (req, res) => {
         if(!user) return res.status(400).json({err:'user not found.'});
         
         user = JSON.parse(JSON.stringify(user));
-        user.status = JSON.parse(user.status);
 
         user.status.permissions.push(req.body.permission);
 
