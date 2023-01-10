@@ -1,9 +1,16 @@
 require('dotenv').config();
 
 
+const fs = require('fs');
 function log(text) {
     let date = new Date();
-    console.log(`${date.getDay()}.${date.getMonth()}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds}   ${text}`);
+    let formatted = `${date.getDay()}.${date.getMonth()}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}   ${text}`;
+    console.log(formatted);
+    try {
+        fs.appendFileSync(path.join(__dirname, process.env.LOG_PATH, 'log.txt'), formatted+'\n');
+    } catch(err) {
+        console.log(err);
+    }
 }
 
 
@@ -33,7 +40,7 @@ const db = mysql.createConnection({
 db.connect((err) => {
     if(err) return console.log(err);
 
-    console.log('Database connected!');
+    log('Database connected!');
 });
 
 const express = require('express');
@@ -326,4 +333,4 @@ function generateAccessToken(user) {
 const port = process.env.PORT || 80;
 app.listen(port);
 
-console.log('App is listening on port ' + port);
+log('App is listening on port ' + port);
