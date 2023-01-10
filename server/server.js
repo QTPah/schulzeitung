@@ -1,6 +1,12 @@
 require('dotenv').config();
 
 
+function log(text) {
+    let date = new Date();
+    console.log(`${date.getDay()}.${date.getMonth()}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds}   ${text}`);
+}
+
+
 const nodemailer = require('nodemailer');
 
 
@@ -24,11 +30,11 @@ const db = mysql.createConnection({
     password: process.env.DB_PASSWORD
 });
 
-// db.connect((err) => {
-//     if(err) return console.log(err);
+db.connect((err) => {
+    if(err) return console.log(err);
 
-//     console.log('Database connected!');
-// });
+    console.log('Database connected!');
+});
 
 const express = require('express');
 const path = require('path');
@@ -90,10 +96,9 @@ app.post('/api/post', authJWT, (req, res) => {
 
   db.query('INSERT INTO posts (title, lead, body, tags, stats) VALUES (?, ?, ?, ?, ?);', [req.body.title, req.body.lead, req.body.body, req.body.tags, JSON.stringify({likes:0,views:0,comments:[]})], (err, results) => {
 
-    console.log(err);
-      if(err) return res.status(500).json({message: 'Failed to post.'});
+    if(err) return res.status(500).json({message: 'Failed to post.'});
       
-      res.status(200).json({message: 'Success!'});
+    res.status(200).json({message: 'Success!'});
 
   });
 });
@@ -187,9 +192,13 @@ app.post('/auth/register', (req, res) => {
     if(!req.body.code ? !email || !password : false) return res.json({err: 'Email or Password missig.'});
     if(!req.body.code ? !email.endsWith("@edu.sbl.ch") && !email.endsWith("@sbl.ch") : false) return res.json({err: 'Email not accepted!'});
 
+    log(`'${email}' is attempting to register`);
+
     if(!req.body.code) {
 
         let code = Math.floor(Math.random() * (999999 - 111111 + 1) + 111111)
+
+        log(`Sending ${email} code ${code}`);
 
         transporter.sendMail({
             from: 'zeitung.zeitung.cool@gmail.com',
@@ -197,7 +206,10 @@ app.post('/auth/register', (req, res) => {
             subject: 'Bestätigungs Code',
             html: `<h3>Ihr code lautet: </h3><h1>${code}</h1>`
         }, (error, info) => {
-            if (error) return res.json({err: 'Failed to send Mail: '+error});
+            if (error) { 
+                log(`Failed to send email '${email}': ${err}`);
+                return res.json({err: 'Failed to send Mail: '+error});
+            }
             emailCodes.push({
                 email,
                 password,
@@ -205,6 +217,7 @@ app.post('/auth/register', (req, res) => {
                 iot: Date.now()
             });
             res.json({res: 'Verification code sent'});
+            log(`Successfully send code ${code} to ${email}`);
         });
 
         return;
@@ -251,8 +264,6 @@ app.post('/auth/getusers', authJWT, (req, res) => {
     db.query('SELECT * FROM users;', (err, results) => {
         if(err) return res.sendStatus(500);
 
-        console.log(results);
-
         res.json({
             auth: true,
             users: results
@@ -281,7 +292,6 @@ app.delete('/auth/revokepermission', authJWT, (req, res) => {
 
 
 app.post('/auth/grantpermission', authJWT, (req, res) => {
-    console.log(req.user);
     if(!req.user.status.permissions.includes('MANAGE:USERS')) res.sendStatus(403);
 
     db.query('SELECT * FROM users WHERE email = ?;', [req.body.email], (err, results) => {
