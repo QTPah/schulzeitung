@@ -37,8 +37,9 @@ function User({ user }) {
                             });
                     }} key={p} >{p}<br /></p>))}
                     <input ref={permissionRef} type="text" placeholder="Permission"></input><button onClick={() => {
-                        auth.grantPermission(user.email, permissionRef.current.value);
-                        window.location.reload();
+                        auth.grantPermission(user.email, permissionRef.current.value).then(() => {
+                            window.location.reload();
+                        });
                     }}>Grant</button>
             </div>
         </>

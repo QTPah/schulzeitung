@@ -233,13 +233,13 @@ app.post('/auth/register', (req, res) => {
     if(!emailCodes.find(e => e.code == req.body.code)) return res.json({err: 'Wrong verification code'});
     let registry = emailCodes.find(e => e.code == req.body.code);
 
-    db.query('SELECT * FROM users WHERE email = ?', registry.email, (err, results) => {
+    db.query('SELECT * FROM users WHERE email LIKE \'?%\'', registry.email, (err, results) => {
         if(results[0]) return res.json({err: 'User already exists'});
 
         bcrypt.hash(registry.password, 10, (err, hash) => {
             db.query('INSERT INTO users (email, password, status) VALUES (?, ?, ?);', 
             [registry.email, hash, JSON.stringify({ permissions: 
-                registry.email.endsWith('@edu.sbl.ch') ? ['VIEW:POSTS', 'VIEW:RUBRIKEN', 'STUDENT' ] : ['VIEW:POSTS', 'VIEW:RUBRIKEN', 'TEACHER' ]
+                registry.email.endsWith('@edu.sbl.ch') ? ['VIEW:POSTS', 'VIEW:RUBRIKEN' ] : ['VIEW:POSTS', 'VIEW:RUBRIKEN' ]
                 , score:0, badges: [] })], (err, results) => {
                 if(err) return res.sendStatus(500);
     

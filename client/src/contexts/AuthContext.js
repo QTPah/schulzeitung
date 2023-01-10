@@ -124,11 +124,11 @@ export function AuthProvider({ children }) {
   }
 
   async function revokePermission(email, permission) {
-    const res = Axios.delete(`/auth${config.path.revokePermission}`, { headers: { "authorization": localStorage.getItem('token') }, data: { email, permission } })
+    const res = await Axios.delete(`/auth${config.path.revokePermission}`, { headers: { "authorization": localStorage.getItem('token') }, data: { email, permission } })
   }
 
   async function grantPermission(email, permission) {
-    const res = Axios.post(`/auth${config.path.grantPermission}`, { email, permission }, { headers: { "authorization": localStorage.getItem('token') } })
+    const res = await Axios.post(`/auth${config.path.grantPermission}`, { email, permission }, { headers: { "authorization": localStorage.getItem('token') } });
   }
 
   useEffect(() => {
